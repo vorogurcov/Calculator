@@ -8,37 +8,56 @@ namespace BasicCalcFunctions
 		leftparentheses = '(', rightparentheses = ')'
 	};
 
-	std::queue<std::string>& parseInput(std::string const& input)
-	{
+	std::queue<std::string>& parseInput(const std::string& input) {
 		std::queue<std::string>& tokens = *new std::queue<std::string>;
 
 		std::istringstream sstr(input);
 		char sym;
 		bool isnumber = false;
 		std::string curtoken;
-		while ((sym = sstr.get()) != '\n')
-		{
+		bool expectUnaryMinus = true;  
+
+		while (sstr.get(sym)) {
 			curtoken = "";
 
-			while (isdigit(sym))
-			{
-				isnumber = true;
-				curtoken += sym;
-				sym = sstr.get();
+			
+			if (isspace(sym)) {
+				continue;
 			}
 
-			if (isnumber == true)
-			{
+			
+			if (isdigit(sym) || (sym == '-' && expectUnaryMinus)) {
+				
+				if (sym == '-') {
+					curtoken += sym;  
+					sstr.get(sym);     
+				}
+
+				
+				while (isdigit(sym)) {
+					curtoken += sym;
+					if (!sstr.get(sym)) break;  
+				}
+
 				tokens.push(curtoken);
 				curtoken = "";
-				isnumber = false;
-			}
+				isnumber = true;
+				expectUnaryMinus = false; 
 
-			if (sym == '\n')
-				break;
-			else
-				tokens.push(curtoken = sym);
-		};
+				
+				if (!isdigit(sym)) {
+					sstr.unget();
+				}
+			}
+			else {
+			
+				curtoken += sym;
+				tokens.push(curtoken);
+				isnumber = false;
+				expectUnaryMinus = (sym == '(' || sym == ')' || sym == '+' || sym == '*' || sym == '/');  // Unary minus can occur after these
+			}
+		}
+
 		return tokens;
 	}
 
@@ -60,7 +79,7 @@ namespace BasicCalcFunctions
 
 			std::string token = tokens.front();
 			tokens.pop();
-			if (isdigit(token[0]))
+			if (isdigit(token[0]) || (token.size() > 1 && isdigit(token[1])))
 				tokensRPN.push(token);
 			else if (token == std::string(1, addition) || token == std::string(1, subtraction) ||
 				token == std::string(1, multiplication) || token == std::string(1, division))
@@ -123,7 +142,7 @@ namespace BasicCalcFunctions
 		{
 			std::string token = tokensRPN.front();
 			tokensRPN.pop();
-			if (isdigit(token[0]))
+			if (isdigit(token[0]) || (token.size() > 1 && isdigit(token[1])))
 				st.push(token);
 			else
 			{
@@ -156,9 +175,6 @@ namespace InterfaceFunctions
 		std::string equation;
 		std::cout << "Please, type in your equation\n";
 		std::getline(std::cin, equation);
-
-		equation.erase(std::remove_if(equation.begin(), equation.end(), ::isspace), equation.end());
-		equation += '\n';
 
 		return equation;
 	}
