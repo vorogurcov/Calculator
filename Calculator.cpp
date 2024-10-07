@@ -11,12 +11,9 @@ int main()
 	s.erase(std::remove_if(s.begin(), s.end(), ::isspace), s.end());
 	s += '\n';
 
-	queue<string> q = BasicCalcFunctions::parseInput(s);
-
-	queue<string> qe = BasicCalcFunctions::Shunting_Yard(q);
-
-	//int ans = BasicCalcFunctions::calculate(s);
 	
+	int ans = BasicCalcFunctions::calculate(s);
 	
+	std::cout << ans;
 
 }

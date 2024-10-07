@@ -52,7 +52,7 @@ namespace BasicCalcFunctions
 
 	std::queue<std::string>& Shunting_Yard(std::queue<std::string>& tokens)
 	{
-		std::queue<std::string>& tokensRNP = *new std::queue<std::string>;
+		std::queue<std::string>& tokensRPN = *new std::queue<std::string>;
 		std::stack<std::string> operations;
 
 		while (!tokens.empty())
@@ -61,7 +61,7 @@ namespace BasicCalcFunctions
 			std::string token = tokens.front();
 			tokens.pop();
 			if (isdigit(token[0]))
-				tokensRNP.push(token);
+				tokensRPN.push(token);
 			else if (token == std::string(1, addition) || token == std::string(1, subtraction) ||
 				token == std::string(1, multiplication) || token == std::string(1, division))
 
@@ -72,7 +72,7 @@ namespace BasicCalcFunctions
 				{
 					while (!operations.empty() && getPrecedence(token) < getPrecedence(operations.top()))
 					{
-						tokensRNP.push(operations.top());
+						tokensRPN.push(operations.top());
 						operations.pop();
 					}
 					operations.push(token);
@@ -84,7 +84,7 @@ namespace BasicCalcFunctions
 			{
 				while (operations.top() != std::string(1,leftparentheses))
 				{
-					tokensRNP.push(operations.top());
+					tokensRPN.push(operations.top());
 					operations.pop();
 				}
 				operations.pop();
@@ -93,16 +93,51 @@ namespace BasicCalcFunctions
 
 		while (!operations.empty())
 		{
-			tokensRNP.push(operations.top());
+			tokensRPN.push(operations.top());
 			operations.pop();
 		}
 
-		return tokensRNP;
+		return tokensRPN;
 	}
 
-	double evaluate(std::queue<std::string> const& tokensRPN)
+	std::string& evaluateOperation(std::string& token, std::string& arg1, std::string& arg2)
 	{
-		return 2;
+		std::string& ans = *new std::string;
+		if (token == std::string(1, addition))
+			ans = std::to_string(std::stod(arg1) + std::stod(arg2));
+		else if (token == std::string(1, subtraction))
+			ans = std::to_string(std::stod(arg2) - std::stod(arg1));
+		else if (token == std::string(1, multiplication))
+			ans = std::to_string(std::stod(arg1) * std::stod(arg2));
+		else if (token == std::string(1, division))
+			ans = std::to_string(std::stod(arg2) / std::stod(arg1));
+		
+		return ans;
+	}
+
+	double evaluate(std::queue<std::string>& tokensRPN)
+	{
+		std::stack<std::string> st;
+
+		while (!tokensRPN.empty())
+		{
+			std::string token = tokensRPN.front();
+			tokensRPN.pop();
+			if (isdigit(token[0]))
+				st.push(token);
+			else
+			{
+				std::string arg1 = st.top();
+				st.pop();
+				std::string arg2 = st.top();
+				st.pop();
+				std::string ans = evaluateOperation(token, arg1, arg2);
+				st.push(ans);
+			}
+		}
+		double ans = std::stod(st.top());
+		st.pop();
+		return ans;
 	}
 
 	double calculate(std::string const& input)
