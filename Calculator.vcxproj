@@ -127,7 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BasicFunctions.cpp" />
     <ClCompile Include="Calculator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BasicFunctions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
