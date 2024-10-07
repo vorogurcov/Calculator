@@ -12,7 +12,7 @@
 namespace BasicCalcFunctions
 {
 	std::queue<std::string>& parseInput(std::string const& input);
-	static std::queue<std::string>& Shunting_Yard(std::queue<std::string> const& tokens);
+	std::queue<std::string>& Shunting_Yard(std::queue<std::string> & tokens);
 	static double evaluate(std::queue<std::string> const& tokensRPN);
 	double calculate(std::string const& input);
 }
