@@ -182,7 +182,6 @@ namespace InterfaceFunctions
 	void AnswerGetter(std::string& equation)
 	{
 		double ans = BasicCalcFunctions::calculate(equation);
-		equation.pop_back();
 		std::cout << equation + " = " << ans;
 		
 	};
