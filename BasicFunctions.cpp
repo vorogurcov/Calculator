@@ -148,3 +148,26 @@ namespace BasicCalcFunctions
 		return ans;
 	}
 }
+
+namespace InterfaceFunctions
+{
+	std::string EquationGetter()
+	{
+		std::string equation;
+		std::cout << "Please, type in your equation\n";
+		std::getline(std::cin, equation);
+
+		equation.erase(std::remove_if(equation.begin(), equation.end(), ::isspace), equation.end());
+		equation += '\n';
+
+		return equation;
+	}
+
+	void AnswerGetter(std::string& equation)
+	{
+		double ans = BasicCalcFunctions::calculate(equation);
+		equation.pop_back();
+		std::cout << equation + " = " << ans;
+		
+	};
+}
