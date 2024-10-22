@@ -1,73 +1,77 @@
 #include "BasicFunctions.h"
 
+#include <iostream>
+#include <sstream>
+#include <queue>
+#include <stack>
+#include <cmath>
+#include <string>
+#include <windows.h>
+#include <unordered_map>
+#include "CommandManagerHeader.h"  // подключаем наш CommandManager
 
-namespace BasicCalcFunctions
-{
+namespace BasicCalcFunctions {
     enum BasicSymbs {
         addition = '+', subtraction = '-', multiplication = '*', division = '/',
         leftparentheses = '(', rightparentheses = ')', power = '^',
         sin_op = 's', cos_op = 'c', ln_op = 'l'
     };
 
+    // Функция парсинга
     std::queue<std::string>& parseInput(const std::string& input) {
         std::queue<std::string>& tokens = *new std::queue<std::string>;
-
         std::istringstream sstr(input);
         char sym;
-        bool isnumber = false;
-        std::string curtoken;
         bool expectUnaryMinus = true;
+        std::string curtoken;
 
         while (sstr.get(sym)) {
             curtoken = "";
-
             if (isspace(sym)) {
                 continue;
             }
-
             if (isdigit(sym) || (sym == '-' && expectUnaryMinus)) {
                 if (sym == '-') {
                     curtoken += sym;
                     sstr.get(sym);
                 }
-
                 while (isdigit(sym) || sym == '.') {
                     curtoken += sym;
                     if (!sstr.get(sym)) break;
                 }
-
                 tokens.push(curtoken);
-                curtoken = "";
-                isnumber = true;
                 expectUnaryMinus = false;
-
                 if (!isdigit(sym) && sym != '.') {
                     sstr.unget();
                 }
             }
             else {
-                if (sym == 's' || sym == 'c' || sym == 'l') {
+                if (isalpha(sym)) {
                     std::string func(1, sym);
                     while (isalpha(sstr.peek())) {
                         sstr.get(sym);
                         func += sym;
                     }
-
-                    tokens.push(func);
+                    if (CommandManager::IsCommandAvailable(func)) {
+                        tokens.push(func);
+                    }
+                    else {
+                        std::cerr << "Error: Function " << func << " not found!\n";
+                        throw std::runtime_error("Unknown function");
+                    }
                     expectUnaryMinus = true;
                 }
                 else {
                     curtoken += sym;
                     tokens.push(curtoken);
-                    isnumber = false;
                     expectUnaryMinus = (sym == '(' || sym == ')' || sym == '+' || sym == '*' || sym == '/' || sym == '^');
                 }
             }
         }
-
         return tokens;
     }
 
+    // Определяем приоритет операции
     int getPrecedence(const std::string& token) {
         if (token == std::string(1, addition) || token == std::string(1, subtraction))
             return 1;
@@ -75,11 +79,12 @@ namespace BasicCalcFunctions
             return 2;
         else if (token == "^")
             return 3;
-        else if (token == "sin" || token == "cos" || token == "ln")
+        else if (CommandManager::IsCommandAvailable(token))
             return 4;
         return 0;
     }
 
+    // Реализация алгоритма сортировочной станции
     std::queue<std::string>& Shunting_Yard(std::queue<std::string>& tokens) {
         std::queue<std::string>& tokensRPN = *new std::queue<std::string>;
         std::stack<std::string> operations;
@@ -93,13 +98,11 @@ namespace BasicCalcFunctions
             }
             else if (token == std::string(1, addition) || token == std::string(1, subtraction) ||
                 token == std::string(1, multiplication) || token == std::string(1, division) || token == "^") {
-
                 while (!operations.empty() && getPrecedence(token) <= getPrecedence(operations.top())) {
                     tokensRPN.push(operations.top());
                     operations.pop();
                 }
                 operations.push(token);
-
             }
             else if (token == std::string(1, leftparentheses)) {
                 operations.push(token);
@@ -111,7 +114,7 @@ namespace BasicCalcFunctions
                 }
                 operations.pop();
             }
-            else if (token == "sin" || token == "cos" || token == "ln") {
+            else if (CommandManager::IsCommandAvailable(token)) {
                 operations.push(token);
             }
         }
@@ -124,9 +127,9 @@ namespace BasicCalcFunctions
         return tokensRPN;
     }
 
+    // Выполнение операций
     std::string& evaluateOperation(std::string& token, std::string& arg1, std::string& arg2) {
         std::string& ans = *new std::string;
-
         if (token == std::string(1, addition))
             ans = std::to_string(std::stod(arg2) + std::stod(arg1));
         else if (token == std::string(1, subtraction))
@@ -137,23 +140,15 @@ namespace BasicCalcFunctions
             ans = std::to_string(std::stod(arg2) / std::stod(arg1));
         else if (token == "^")
             ans = std::to_string(std::pow(std::stod(arg2), std::stod(arg1)));
-
         return ans;
     }
 
-    std::string evaluateFunction(std::string& token, std::string& arg) {
-        std::string ans;
-
-        if (token == "sin")
-            ans = std::to_string(std::sin(std::stod(arg)));
-        else if (token == "cos")
-            ans = std::to_string(std::cos(std::stod(arg)));
-        else if (token == "ln")
-            ans = std::to_string(std::log(std::stod(arg)));
-
-        return ans;
+    // Выполнение команд
+    std::string evaluateFunction(std::string& token, std::string& arg1) {
+        return std::to_string(CommandManager::InvokeCommand(token, std::stod(arg1)));
     }
 
+    // Оценка выражения в обратной польской записи
     double evaluate(std::queue<std::string>& tokensRPN) {
         std::stack<std::string> st;
 
@@ -164,9 +159,10 @@ namespace BasicCalcFunctions
             if (isdigit(token[0]) || (token.size() > 1 && isdigit(token[1]))) {
                 st.push(token);
             }
-            else if (token == "sin" || token == "cos" || token == "ln") {
+            else if (CommandManager::IsCommandAvailable(token)) {
                 std::string arg = st.top();
                 st.pop();
+                //TODO: Correct evaluateFunctions implementation
                 std::string ans = evaluateFunction(token, arg);
                 st.push(ans);
             }
@@ -185,13 +181,14 @@ namespace BasicCalcFunctions
         return ans;
     }
 
+    // Основная функция калькулятора
     double calculate(const std::string& input) {
         std::queue<std::string> tokens = parseInput(input);
         std::queue<std::string> tokensRPN = Shunting_Yard(tokens);
-        double ans = evaluate(tokensRPN);
-        return ans;
+        return evaluate(tokensRPN);
     }
 }
+
 
     namespace InterfaceFunctions
     {
