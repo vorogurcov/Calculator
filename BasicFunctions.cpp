@@ -8,7 +8,7 @@
 #include <string>
 #include <windows.h>
 #include <unordered_map>
-#include "CommandManagerHeader.h"  // подключаем наш CommandManager
+#include "CommandManagerHeader.h"  
 
 namespace BasicCalcFunctions {
     enum BasicSymbs {
@@ -17,7 +17,6 @@ namespace BasicCalcFunctions {
         sin_op = 's', cos_op = 'c', ln_op = 'l'
     };
 
-    // Функция парсинга
     std::queue<std::string>& parseInput(const std::string& input) {
         std::queue<std::string>& tokens = *new std::queue<std::string>;
         std::istringstream sstr(input);
@@ -71,7 +70,6 @@ namespace BasicCalcFunctions {
         return tokens;
     }
 
-    // Определяем приоритет операции
     int getPrecedence(const std::string& token) {
         if (token == std::string(1, addition) || token == std::string(1, subtraction))
             return 1;
@@ -84,7 +82,7 @@ namespace BasicCalcFunctions {
         return 0;
     }
 
-    // Реализация алгоритма сортировочной станции
+
     std::queue<std::string>& Shunting_Yard(std::queue<std::string>& tokens) {
         std::queue<std::string>& tokensRPN = *new std::queue<std::string>;
         std::stack<std::string> operations;
@@ -143,12 +141,12 @@ namespace BasicCalcFunctions {
         return ans;
     }
 
-    // Выполнение команд
+    
     std::string evaluateFunction(std::string& token, std::string& arg1) {
         return std::to_string(CommandManager::InvokeCommand(token, std::stod(arg1)));
     }
 
-    // Оценка выражения в обратной польской записи
+    
     double evaluate(std::queue<std::string>& tokensRPN) {
         std::stack<std::string> st;
 
@@ -162,7 +160,7 @@ namespace BasicCalcFunctions {
             else if (CommandManager::IsCommandAvailable(token)) {
                 std::string arg = st.top();
                 st.pop();
-                //TODO: Correct evaluateFunctions implementation
+              
                 std::string ans = evaluateFunction(token, arg);
                 st.push(ans);
             }
@@ -181,7 +179,7 @@ namespace BasicCalcFunctions {
         return ans;
     }
 
-    // Основная функция калькулятора
+
     double calculate(const std::string& input) {
         std::queue<std::string> tokens = parseInput(input);
         std::queue<std::string> tokensRPN = Shunting_Yard(tokens);
