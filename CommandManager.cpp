@@ -13,8 +13,6 @@ std::unordered_map<std::string, PluginFunction> CommandManager::commandMap =
 std::vector<HMODULE> CommandManager::loadedLibraries = 
 *new std::vector<HMODULE>;
 
-
-
 static std::string getCommandName(std::string& command)
 {
     command.erase(command.length() - 4);

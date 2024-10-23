@@ -17,14 +17,11 @@ using RegisterFunction = void(*)(std::unordered_map<std::string, PluginFunction>
 
 class CommandManager {
 public:
-    
    
     static std::unordered_map<std::string, PluginFunction> commandMap;
 
-  
     static std::vector<HMODULE> loadedLibraries;
 
-   
     static void LoadPlugins(const std::string& pluginFolder = "./plugins");
 
     static bool IsCommandAvailable(const std::string& commandName);
@@ -33,7 +30,6 @@ public:
     
     ~CommandManager();
 
-    
 };
 
 #endif // !COMMAND_MANAGER_H

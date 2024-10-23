@@ -55,8 +55,7 @@ namespace BasicCalcFunctions {
                         tokens.push(func);
                     }
                     else {
-                        std::cerr << "Error: Function " << func << " not found!\n";
-                        throw std::runtime_error("Unknown function");
+                        throw std::runtime_error("Unknown function " + func);
                     }
                     expectUnaryMinus = true;
                 }
@@ -160,17 +159,33 @@ namespace BasicCalcFunctions {
             else if (CommandManager::IsCommandAvailable(token)) {
                 std::string arg = st.top();
                 st.pop();
-              
-                std::string ans = evaluateFunction(token, arg);
-                st.push(ans);
+                try {
+                    std::string ans = evaluateFunction(token, arg);
+                    st.push(ans);
+                }
+                catch (std::invalid_argument const& ex)
+                {
+                    std::cout << "Invalid argument in function " + token;
+                    exit(666);
+                }
+                
             }
             else {
+               
                 std::string arg1 = st.top();
                 st.pop();
                 std::string arg2 = st.top();
                 st.pop();
-                std::string ans = evaluateOperation(token, arg1, arg2);
-                st.push(ans);
+                try {
+                    std::string ans = evaluateOperation(token, arg1, arg2);
+                    st.push(ans);
+                }
+                catch (std::runtime_error const& er)
+                {
+                    std::cout << er.what();
+                    exit(666);
+                }
+               
             }
         }
 
@@ -181,9 +196,17 @@ namespace BasicCalcFunctions {
 
 
     double calculate(const std::string& input) {
-        std::queue<std::string> tokens = parseInput(input);
-        std::queue<std::string> tokensRPN = Shunting_Yard(tokens);
-        return evaluate(tokensRPN);
+        try {
+            std::queue<std::string> tokens = parseInput(input);
+            std::queue<std::string> tokensRPN = Shunting_Yard(tokens);
+            return evaluate(tokensRPN);
+        }
+        catch (std::runtime_error const& er )
+        {
+            std::cout << er.what();
+            exit(555);
+        }
+        
     }
 }
 
